@@ -80,7 +80,7 @@ git config --global user.email "you@example.com"
 git config --global init.defaultBranch main
 ```
 
-Ask the user for their name and email before running these.
+Always ensure both `user.name` and `user.email` are configured. Do not skip this step.
 
 ### 3.4 NVM + Node.js
 
@@ -157,12 +157,25 @@ brew install --cask clashx
 
 For VSCode, also install the `code` CLI:
 ```bash
-# Open VSCode → Cmd+Shift+P → "Shell Command: Install 'code' command in PATH"
-```
+# Script mode already appends VSCode CLI path to ~/.zshrc:
+echo 'export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"' >> ~/.zshrc
+export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
 
-Or via terminal if already in PATH:
-```bash
-which code
+# Then installs common extensions automatically:
+code --install-extension dbaeumer.vscode-eslint
+code --install-extension esbenp.prettier-vscode
+code --install-extension eamodio.gitlens
+code --install-extension ms-vscode.vscode-typescript-next
+code --install-extension golang.go
+code --install-extension rust-lang.rust-analyzer
+code --install-extension ms-python.python
+code --install-extension ms-python.vscode-pylance
+code --install-extension bradlc.vscode-tailwindcss
+code --install-extension PKief.material-icon-theme
+code --install-extension GitHub.github-vscode-theme
+code --install-extension ms-vscode-remote.remote-ssh
+code --install-extension formulahendry.auto-rename-tag
+code --install-extension christian-kohler.path-intellisense
 ```
 
 ## Step 4: Shell Profile Cleanup

@@ -71,6 +71,70 @@ add_to_zshrc() {
   grep -qF "$line" ~/.zshrc 2>/dev/null || echo "$line" >> ~/.zshrc
 }
 
+ensure_git_identity() {
+  local current_name current_email git_name git_email
+  current_name="$(git config --global --get user.name || true)"
+  current_email="$(git config --global --get user.email || true)"
+
+  if [[ -n "$current_name" && -n "$current_email" ]]; then
+    ok "Git identity already configured: $current_name <$current_email>"
+    return
+  fi
+
+  echo ""
+  info "Configuring Git identity (required)..."
+
+  git_name="$current_name"
+  while [[ -z "$git_name" ]]; do
+    read -rp "  Git user.name: " git_name
+  done
+
+  git_email="$current_email"
+  while [[ -z "$git_email" ]]; do
+    read -rp "  Git user.email: " git_email
+  done
+
+  git config --global user.name "$git_name"
+  git config --global user.email "$git_email"
+  ok "Git identity configured: $git_name <$git_email>"
+}
+
+install_vscode_extensions() {
+  local vscode_bin="/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
+  add_to_zshrc 'export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"'
+  export PATH="$PATH:$vscode_bin"
+
+  if ! command -v code &>/dev/null; then
+    warn "VSCode CLI 'code' not found in PATH, skip extension install"
+    warn "Try opening VSCode once, then rerun: bash scripts/install.sh --apps"
+    return
+  fi
+
+  info "Installing VSCode extensions..."
+  local extensions=(
+    "dbaeumer.vscode-eslint"
+    "esbenp.prettier-vscode"
+    "eamodio.gitlens"
+    "ms-vscode.vscode-typescript-next"
+    "golang.go"
+    "rust-lang.rust-analyzer"
+    "ms-python.python"
+    "ms-python.vscode-pylance"
+    "bradlc.vscode-tailwindcss"
+    "PKief.material-icon-theme"
+    "GitHub.github-vscode-theme"
+    "ms-vscode-remote.remote-ssh"
+    "formulahendry.auto-rename-tag"
+    "christian-kohler.path-intellisense"
+  )
+
+  for ext in "${extensions[@]}"; do
+    code --install-extension "$ext" --force
+  done
+
+  ok "VSCode extensions installed"
+}
+
 echo ""
 echo "=== Starting macOS Dev Environment Setup ==="
 echo ""
@@ -104,11 +168,7 @@ if $INSTALL_GIT; then
     brew install git
   fi
   ok "Git $(git --version | awk '{print $3}')"
-  echo ""
-  read -rp "  Git user.name  (leave blank to skip): " git_name
-  read -rp "  Git user.email (leave blank to skip): " git_email
-  [[ -n "$git_name" ]]  && git config --global user.name "$git_name"
-  [[ -n "$git_email" ]] && git config --global user.email "$git_email"
+  ensure_git_identity
   git config --global init.defaultBranch main
 fi
 
@@ -179,6 +239,8 @@ if $INSTALL_APPS; then
   else
     ok "VSCode already installed"
   fi
+
+  install_vscode_extensions
 
   if ! ls /Applications/Google\ Chrome.app &>/dev/null; then
     info "Downloading & installing Google Chrome..."
